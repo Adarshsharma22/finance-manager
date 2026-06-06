@@ -294,6 +294,6 @@ MIT — free to use, modify, and learn from.
 
 <div align="center">
 
-Built by **Harsh Sharma** · Powered by FastAPI + React + PostgreSQL · Guided by Claude (Anthropic)
+Built by **Adarsh Sharma** · Powered by FastAPI + React + PostgreSQL · Guided by Claude (Anthropic)
 
 </div>
