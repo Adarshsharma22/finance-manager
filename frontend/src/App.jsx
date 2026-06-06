@@ -1,68 +1,89 @@
-import React from "react"
+import { useState, useEffect, useCallback } from 'react'
+import Navbar          from './components/Navbar'
+import StatsRow        from './components/StatsRow'
+import TransactionForm from './components/TransactionForm'
+import TransactionList from './components/TransactionList'
+import BudgetTracker   from './components/BudgetTracker'
+import Analytics       from './pages/Analytics'
+import { getTransactions, getCategories, getBudgets } from './api'
 
-function App() {
+export default function App() {
+  const now = new Date()
+  const [month,  setMonth]  = useState(now.getMonth() + 1)
+  const [year,   setYear]   = useState(now.getFullYear())
+  const [tab,    setTab]    = useState('dashboard')  // 'dashboard' | 'analytics'
+
+  const [transactions, setTransactions] = useState([])
+  const [categories,   setCategories]   = useState([])
+  const [budgets,      setBudgets]      = useState([])
+  const [loading,      setLoading]      = useState(true)
+
+  const loadData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const [txRes, catRes, budRes] = await Promise.all([
+        getTransactions({ month, year }),
+        getCategories(),
+        getBudgets(),
+      ])
+      setTransactions(txRes.data)
+      setCategories(catRes.data)
+      setBudgets(budRes.data)
+    } catch (err) {
+      console.error('Failed to load data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [month, year])
+
+  useEffect(() => { loadData() }, [loadData])
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-gray-800">
-            Finance Manager
-          </h1>
-          <span className="text-sm text-gray-500">Phase 1 — Setup complete</span>
-        </div>
-      </nav>
+      <Navbar
+        month={month} year={year}
+        onMonthChange={setMonth}
+        onYearChange={setYear}
+      />
 
-      {/* Main content */}
-      <main className="max-w-6xl mx-auto px-6 py-10">
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-6 mb-10">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-sm text-gray-500 mb-1">Total income</p>
-            <p className="text-2xl font-semibold text-green-600">₹0</p>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-sm text-gray-500 mb-1">Total expenses</p>
-            <p className="text-2xl font-semibold text-red-500">₹0</p>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <p className="text-sm text-gray-500 mb-1">Balance</p>
-            <p className="text-2xl font-semibold text-gray-800">₹0</p>
-          </div>
+      {/* Tab bar */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 flex gap-1">
+          {['dashboard', 'analytics'].map(t => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors capitalize ${
+                tab === t
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {t === 'dashboard' ? '⊞  Dashboard' : '↗  Analytics'}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* API connection test */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-base font-medium text-gray-700 mb-4">
-            Backend connection
-          </h2>
-          <ApiStatus />
-        </div>
+      <main className="max-w-6xl mx-auto px-6 py-8">
+        {loading && tab === 'dashboard' ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+            <span className="ml-3 text-sm text-gray-500">Loading...</span>
+          </div>
+        ) : tab === 'dashboard' ? (
+          <>
+            <StatsRow transactions={transactions} />
+            <div className="grid grid-cols-[1fr_1.5fr] gap-6 mb-6">
+              <TransactionForm categories={categories} onAdded={loadData} />
+              <TransactionList transactions={transactions} onDeleted={loadData} />
+            </div>
+            <BudgetTracker budgets={budgets} />
+          </>
+        ) : (
+          <Analytics month={month} year={year} />
+        )}
       </main>
     </div>
   )
 }
-
-function ApiStatus() {
-  const [status, setStatus] = React.useState("checking...")
-
-  React.useEffect(() => {
-    fetch("http://localhost:8000/health")
-      .then(res => res.json())
-      .then(data => setStatus(data.status))
-      .catch(() => setStatus("offline — start your FastAPI server!"))
-  }, [])
-
-  const isOnline = status === "ok"
-
-  return (
-    <div className="flex items-center gap-3">
-      <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-500" : "bg-red-400"}`} />
-      <span className="text-sm text-gray-600">
-        FastAPI backend: <span className={isOnline ? "text-green-600 font-medium" : "text-red-500"}>{status}</span>
-      </span>
-    </div>
-  )
-}
-
-export default App

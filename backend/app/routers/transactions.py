@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import extract
 from ..database import get_db
-from ..models import Transaction
+from ..models import Transaction, User
 from ..schemas import TransactionCreate, TransactionOut
 from typing import List, Optional
+from ..auth import get_current_user
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
 
@@ -13,10 +14,13 @@ router = APIRouter(prefix="/transactions", tags=["transactions"])
 def get_transactions(
     month: Optional[int] = Query(None, ge=1, le=12),
     year: Optional[int] = Query(None),
-    type: Optional[str] = Query(None),   # "income" or "expense"
-    db: Session = Depends(get_db)
+    type: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    query = db.query(Transaction)
+    query = db.query(Transaction).filter(
+        Transaction.user_id == current_user.id
+    )
 
     if month:
         query = query.filter(extract("month", Transaction.date) == month)
@@ -29,9 +33,14 @@ def get_transactions(
 
 
 @router.get("/{transaction_id}", response_model=TransactionOut)
-def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
+def get_transaction(
+    transaction_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id
+        Transaction.id == transaction_id,
+        Transaction.user_id == current_user.id
     ).first()
 
     if not transaction:
@@ -41,9 +50,16 @@ def get_transaction(transaction_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=TransactionOut)
-def create_transaction(data: TransactionCreate, db: Session = Depends(get_db)):
-    # user_id hardcoded to 1 for now — Phase 5 will add auth
-    transaction = Transaction(user_id=1, **data.model_dump())
+def create_transaction(
+    data: TransactionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    transaction = Transaction(
+        user_id=current_user.id,
+        **data.model_dump()
+    )
+
     db.add(transaction)
     db.commit()
     db.refresh(transaction)
@@ -51,9 +67,14 @@ def create_transaction(data: TransactionCreate, db: Session = Depends(get_db)):
 
 
 @router.delete("/{transaction_id}")
-def delete_transaction(transaction_id: int, db: Session = Depends(get_db)):
+def delete_transaction(
+    transaction_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id
+        Transaction.id == transaction_id,
+        Transaction.user_id == current_user.id
     ).first()
 
     if not transaction:
