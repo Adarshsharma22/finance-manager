@@ -28,24 +28,40 @@ export default function Analytics({ month, year }) {
     load()
   }, [month, year])
 
+  // Enhanced pulse skeleton frame matching real component heights
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-        <span className="ml-3 text-sm text-gray-500">Loading charts...</span>
+      <div className="space-y-6 animate-pulse">
+        {/* Monthly bar chart placeholder */}
+        <div className="h-[340px] bg-gray-100/70 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-2xl w-full" />
+        
+        {/* Bottom charts placeholder grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="h-[390px] lg:col-span-5 bg-gray-100/70 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-2xl" />
+          <div className="h-[390px] lg:col-span-7 bg-gray-100/70 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-2xl" />
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Top row — bar chart full width */}
-      <MonthlyBarChart data={monthly} />
+      {/* Top row — Bar chart taking full container width */}
+      <div className="w-full">
+        <MonthlyBarChart data={monthly} />
+      </div>
 
-      {/* Bottom row — pie + trend side by side */}
-      <div className="grid grid-cols-[1fr_1.4fr] gap-6">
-        <CategoryPieChart data={byCategory} month={month} year={year} />
-        <BalanceTrendChart data={monthly} />
+      {/* Bottom row — Re-architected side-by-side grid using 12-column system */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Pie Chart container */}
+        <div className="lg:col-span-5 w-full">
+          <CategoryPieChart data={byCategory} month={month} year={year} />
+        </div>
+
+        {/* Trend Chart container */}
+        <div className="lg:col-span-7 w-full">
+          <BalanceTrendChart data={monthly} />
+        </div>
       </div>
     </div>
   )
