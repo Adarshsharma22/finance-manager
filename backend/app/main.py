@@ -12,7 +12,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:51730",
-        "https://finance-manager-one-delta.vercel.app/"
+        "https://finance-manager-one-delta.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
