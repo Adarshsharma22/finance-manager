@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import engine, SesstionLocal
+from .database import engine, SessionLocal
 from . import models
 from .routers import transactions, categories, reports, budgets, auth
 
