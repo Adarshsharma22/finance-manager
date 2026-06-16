@@ -2,6 +2,23 @@ from .database import SessionLocal
 from .models import User, Category, Transaction, Budget
 from datetime import date
 
+
+def seed_categories(db):
+    """Seed only categories — safe to call on startup"""
+    categories = [
+        Category(name="Salary",     type="income",  color="#22c55e"),
+        Category(name="Freelance",  type="income",  color="#3b82f6"),
+        Category(name="Food",       type="expense", color="#f97316"),
+        Category(name="Rent",       type="expense", color="#ef4444"),
+        Category(name="Transport",  type="expense", color="#a855f7"),
+        Category(name="Shopping",   type="expense", color="#ec4899"),
+        Category(name="Utilities",  type="expense", color="#14b8a6"),
+    ]
+    for c in categories:
+        db.add(c)
+    db.commit()
+
+
 def seed():
     db = SessionLocal()
 

@@ -25,3 +25,18 @@ app.include_router(budgets.router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.on_event("startup")
+def startup_seed():
+    db = SessionLocal()
+    try:
+        # Only seed if categories table is empty
+        from .models import Category
+        if db.query(Category).count() == 0:
+            from .seed import seed_categories
+            seed_categories(db)
+            print("✅ Database seeded successfully")
+        else:
+            print("ℹ️ Database already seeded, skipping")
+    finally:
+        db.close()
