@@ -266,26 +266,6 @@ This project was built to prepare for a full-stack internship. Key concepts lear
 
 ---
 
-## 🤖 Built with AI Assistance
-
-This project was built with the help of **[Claude](https://claude.ai)** by Anthropic — an AI assistant used throughout the development process.
-
-Claude helped with:
-- Designing the full project architecture and folder structure
-- Writing and explaining FastAPI routes, SQLAlchemy models, and Pydantic schemas
-- Debugging errors (bcrypt version mismatch, Tailwind v4 setup, JWT 401 errors)
-- Setting up Google OAuth from scratch
-- Building the React components and Tailwind UI
-- Teaching concepts as we coded — not just giving answers, but explaining the *why*
-
-> The goal wasn't to copy-paste code — it was to learn by building something real.
-> Every error we hit became a lesson. Every concept was explained before being applied.
->
-> This is how I'd recommend using AI tools as a student: as a **patient tutor**,
-> not a code machine.
-
----
-
 ## 📝 License
 
 MIT — free to use, modify, and learn from.
